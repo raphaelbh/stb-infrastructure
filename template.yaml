@@ -105,7 +105,7 @@ Resources:
           def lambda_handler(event, context):
             return {
                 "statusCode": 200,
-                "body": "signup content 2"
+                "body": "signup content"
             }
   
   SignUpLambdaExecutionRole:
@@ -120,11 +120,21 @@ Resources:
                 - 'lambda.amazonaws.com'
             Action:
               - 'sts:AssumeRole'
-
-  # Lambda Logs
-  # ------------------------------------------------------------
+      Path: '/'
+      Policies:
+        - PolicyName: !Join ["", [{"Ref": "project"}, "-signup-logs-", {"Ref": "environment"}]]
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                - logs:Create*
+                - logs:PutLogEvents
+                Resource:
+                - arn:aws:logs:*:*:*
+  
   LogsLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${SignUpLambda}"
-      RetentionInDays: 30
+      RetentionInDays: 1
