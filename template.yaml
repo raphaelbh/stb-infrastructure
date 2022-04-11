@@ -54,10 +54,10 @@ Resources:
     Properties:
       ApiKeyRequired: false
       AuthorizationType: NONE
-      HttpMethod: POST
+      HttpMethod: GET
       Integration:
         Credentials: !GetAtt SignUpRestApiIamRole.Arn
-        IntegrationHttpMethod: POST
+        IntegrationHttpMethod: GET
         Type: AWS_PROXY
         Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SignUpLambda.Arn}/invocations'
       ResourceId: !Ref SignUpRestApiResource
