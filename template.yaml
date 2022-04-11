@@ -39,6 +39,7 @@ Resources:
     Properties:
       DeploymentId: !Ref SignUpRestApiDeployment
       RestApiId: !Ref AuthApiGatewayRestApi
+      StageName: !Ref environment
 
   #### RestApi Resource/Method ####
   SignUpRestApiResource:
