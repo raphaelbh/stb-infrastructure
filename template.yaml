@@ -26,8 +26,9 @@ Resources:
   ######################################################################################################################
   ###############################################      SIGN UP API      ################################################
   ######################################################################################################################
-
-  #### RestApi Deployment ####
+  
+  # RestApi Deployment
+  # ------------------------------------------------------------
   SignUpRestApiDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn: SignUpRestApiMethod
@@ -41,7 +42,8 @@ Resources:
       RestApiId: !Ref AuthApiGatewayRestApi
       StageName: !Ref environment
 
-  #### RestApi Resource/Method ####
+  # RestApi Resource/Method
+  # ------------------------------------------------------------
   SignUpRestApiResource:
     Type: AWS::ApiGateway::Resource
     Properties:
@@ -63,7 +65,8 @@ Resources:
       ResourceId: !Ref SignUpRestApiResource
       RestApiId: !Ref AuthApiGatewayRestApi
 
-  #### RestApi Role ####
+  # RestApi Role
+  # ------------------------------------------------------------
   SignUpRestApiIamRole:
     Type: AWS::IAM::Role
     Properties:
@@ -87,7 +90,8 @@ Resources:
                 Action: 'lambda:*'
                 Resource: !GetAtt SignUpLambda.Arn
 
-  #### Lambda Function ####
+  # Lambda Function
+  # ------------------------------------------------------------
   SignUpLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -116,3 +120,11 @@ Resources:
                 - 'lambda.amazonaws.com'
             Action:
               - 'sts:AssumeRole'
+
+  # Lambda Logs
+  # ------------------------------------------------------------
+  LogsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${SignUpLambda}"
+      RetentionInDays: 30
