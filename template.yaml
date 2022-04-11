@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Project Infrastructure
+
+Parameters:
+  project:
+    Type: "String"
+    Description: Project
+    Default: "stb"
+  environment:
+    Type: "String"
+    Description: App Environment
+    Default: "dev"
+
+Resources:
+
+  ######################################################################################################################
+  ############################################      AUTH API GATEWAY      ############################################## 
+  ######################################################################################################################
+  
+  AuthApiGatewayRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: stb-auth-api-dev
+      Name: !Join ["", [{"Ref": "project"}, "-auth-api-", {"Ref": "environment"}]]
+      
+  ######################################################################################################################
+  ###############################################      SIGN UP API      ################################################
+  ######################################################################################################################
+
+  #### RestApi Deployment ####
+  SignUpRestApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: SignUpRestApiMethod
+    Properties:
+      RestApiId: !Ref AuthApiGatewayRestApi
+
+  SignUpRestApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      DeploymentId: !Ref SignUpRestApiDeployment
+      RestApiId: !Ref AuthApiGatewayRestApi
+
+  #### RestApi Resource/Method ####
+  SignUpRestApiResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt AuthApiGatewayRestApi.RootResourceId
+      PathPart: 'signup'
+      RestApiId: !Ref AuthApiGatewayRestApi
+
+  SignUpRestApiMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Credentials: !GetAtt SignUpRestApiIamRole.Arn
+        IntegrationHttpMethod: GET
+        Type: AWS_PROXY
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SignUpLambda.Arn}/invocations'
+      ResourceId: !Ref SignUpRestApiResource
+      RestApiId: !Ref AuthApiGatewayRestApi
+
+  #### RestApi Role ####
+  SignUpRestApiIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: ''
+            Effect: 'Allow'
+            Principal:
+              Service:
+                - 'apigateway.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+      Path: '/'
+      Policies:
+        - PolicyName: !Join ["", [{"Ref": "project"}, "-signup-lambda-", {"Ref": "environment"}]]
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action: 'lambda:*'
+                Resource: !GetAtt SignUpLambda.Arn
+
+  #### Lambda Function ####
+  SignUpLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Join ["", [{"Ref": "project"}, "-signup-", {"Ref": "environment"}]]
+      Handler: index.lambda_handler
+      Runtime: python3.8
+      Timeout: 30
+      Role: !GetAtt SignUpLambdaExecutionRole.Arn
+      Code:
+        ZipFile: |
+          def lambda_handler(event, context):
+            return {
+                "statusCode": 200,
+                "body": "signup content 2"
+            }
+  
+  SignUpLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
