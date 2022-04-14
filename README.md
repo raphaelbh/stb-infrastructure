@@ -1,3 +1,3 @@
-# STB Infrastructure
+# [DEPRECATED] STB Infrastructure
 
-[DEPRECATED] Project to create/update the cloud resources.
+Project to create/update the cloud resources.
